@@ -16,6 +16,7 @@ from problems.hpob_problem import HPOBMetaProblem
 from problems.synthetic import SyntheticMetaProblem
 from problems.metabo_synthetic import MetaBOSyntheticMetaProblem
 from problems.real_world_problem import RealWorldMetaProblem
+from problems.ifc import IFCMetaProblem
 
 def post_init(args):
     if isinstance(args.id, list):
@@ -27,10 +28,11 @@ def post_init(args):
     args.test_datasets = args.test_datasets[search_space_id][:15]
     args.eval_episodes = 1 if args.deterministic_eval else args.eval_episodes
     args.problem_cls = {
-        "hpob": HPOBMetaProblem, 
+        "hpob": HPOBMetaProblem,
         "synthetic": SyntheticMetaProblem,
         "metabo_synthetic": MetaBOSyntheticMetaProblem,
         "real_world_problem": RealWorldMetaProblem,
+        "ifc": IFCMetaProblem,
     }.get(args.problem)
 
 args = parse_args(post_init=post_init)
@@ -98,9 +100,20 @@ designer = DecisionTransformerDesigner(
 )
 
 designer.configure_optimizers(
-    max_steps=args.step_per_epoch*args.num_epoch, 
-    **args.optimizer_args, 
+    max_steps=args.step_per_epoch*args.num_epoch,
+    **args.optimizer_args,
 )
+
+# resume from checkpoint if specified
+start_epoch = 0
+if getattr(args, 'load_ckpt', None):
+    ckpt = torch.load(args.load_ckpt, map_location=args.device, weights_only=False)
+    designer.load_state_dict(ckpt)
+    start_epoch = args.start_epoch
+    # fast-forward LR scheduler to match resumed step
+    for _ in range(start_epoch * args.step_per_epoch):
+        designer.optim_scheduler.step()
+    logger.info(f'Resumed from {args.load_ckpt} (epoch {start_epoch})')
 
 designer.train()
 
@@ -113,7 +126,7 @@ trainloader = DataLoader(
 )
 train_iter = iter(trainloader)
 
-for i_epoch in trange(1, args.num_epoch+1):
+for i_epoch in trange(start_epoch + 1, args.num_epoch + 1):
     for i_batch in range(args.step_per_epoch):
         batch = next(train_iter)
         train_metrics = designer.update(batch, clip_grad=args.clip_grad)

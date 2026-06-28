@@ -1,0 +1,106 @@
+\documentclass[10pt]{article}
+\usepackage[a4paper,landscape,margin=1cm]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+
+\setmainfont{Noto Sans CJK KR}
+
+\definecolor{hdr}{RGB}{30,60,110}
+\definecolor{rowg}{RGB}{238,242,248}
+\definecolor{flag}{RGB}{170,30,30}
+
+\newcolumntype{S}{>{\raggedright\arraybackslash}p{1.7cm}}
+\newcolumntype{Q}{>{\raggedright\arraybackslash}p{5.2cm}}
+\newcolumntype{A}{>{\raggedright\arraybackslash}p{10.2cm}}
+\newcolumntype{F}{>{\raggedright\arraybackslash}p{8.0cm}}
+
+\renewcommand{\arraystretch}{1.25}
+\setlength{\parindent}{0pt}
+
+\begin{document}
+\footnotesize
+
+{\Large\bfseries 선배 발표초안 피드백 — 정리}\hfill {\small 2026-06-26 \;/\; \texttt{presentation/progress\_0625.pdf} (메인 8장)}
+
+\vspace{2pt}
+{\small 지표: gap to optimum (낮을수록 좋음). 아래 답은 슬라이드 소스(\texttt{progress\_0625.tex})와 결과파일로 확인한 사실. \textcolor{flag}{빨강}=수정 꼭 필요.}
+
+\vspace{6pt}
+{\large\bfseries\color{hdr} A. 슬라이드별 질문 $\to$ 답 $\to$ 수정 액션}
+\vspace{3pt}
+
+\begin{longtable}{S Q A F}
+\toprule
+\rowcolor{hdr}
+\textcolor{white}{\bfseries 슬라이드} & \textcolor{white}{\bfseries 선배 질문} & \textcolor{white}{\bfseries 답 (사실)} & \textcolor{white}{\bfseries 슬라이드 수정} \\
+\midrule
+\endhead
+
+\textbf{2p}\newline Overview & corner / interior 가 무슨 뜻? & 최적해의 위치. \textbf{SE}=corner(강링크 풀파워 $x{=}1$, 약링크 끔 $x{=}0$, ``켜고/끄기''), \textbf{EE}=interior(중간 전력 $x\approx0.18$). & Overview에 박스+점 위치 작은 그림 한 컷 $\Rightarrow$ R2의 on/off$\cdot$middle 혼란까지 동시 해소. \\
+\rowcolor{rowg}
+2p Overview & SE는 WMMSE, EE는 exhaustive search로 푼 건가? & SE 기준해=WMMSE 맞음. EE는 ``exhaustive'' 아님: \textbf{$D{=}3$만 전수 grid}, \textbf{$D{=}10/20$은 multi-start gradient}(near-global 참조, 전수 아님). & \textcolor{flag}{reference를 $D$별로 분리 표기} (현재 한 줄로 뭉뚱그려져 오해). \\
+2p Overview & 3BA = 3개 알고리즘으로 RIBBO 학습? & 맞음. 3 BA(Random, HillClimbing, CMA-ES)가 만든 \textbf{탐색 궤적}이 학습데이터. RIBBO 자체는 트랜스포머 1개. & 설명만 (수정 불필요). \\
+\rowcolor{rowg}
+2p Overview & unseen channel = 같은 분포? 완전 다른 분포? & \textbf{같은 Rayleigh 분포의 새 realization} (train=채널 0--19, eval=30--). ``완전 다른 분포''는 R5의 Rastrigin transfer. & ``unseen = new Rayleigh realizations (same distribution)'' 한 줄 명시. \\
+\midrule
+
+\textbf{3p}\newline Result 1 & 어떤 문제로 학습? / 그래프는 SE? EE? & \textbf{SE}. (SE 궤적 학습 $\to$ SE 평가) & 슬라이드·그래프에 \textbf{SE} 라벨 추가. \\
+\rowcolor{rowg}
+3p Result 1 & 5BA에 Rand+SGS를 추가한 건가? & \textcolor{flag}{\textbf{반대.}} 5BA-filter는 7BA에서 Random+SGS를 \textbf{뺀} 것 (7BA = 5BA-filter + Rand + SGS). 게다가 3BA\{Rand,HC,CMA\}와 5BA-filter\{HC,RegEvol,Eagle,CMA,BoTorch\}는 \textbf{포함관계도 아님}. & \textcolor{flag}{BA 구성 표를 명시} (가장 큰 혼란 지점). \\
+3p Result 1 & Song 2024 이 뭔지? & RIBBO 논문 (Song et al., IJCAI 2025, ``Reinforced In-Context BBO''). ``well-performing AND diverse BA'' 권고 출처. & ``(the RIBBO paper)'' 라고 명시. \\
+\rowcolor{rowg}
+3p Result 1 & 왜 ``best behavior'' 라고 썼는지? & ``best behavior''가 아니라 \textbf{``best BA pool''}(최적 BA 풀이 차원에 따라 뒤집힘) 뜻. 표현이 어색. & ``Which BA pool works best depends on $D$'' 류로 재서술. \\
+\midrule
+
+\textbf{4p}\newline Result 2 & 무슨 상황으로 학습? & 같은 3BA 풀, \textbf{reward만 SE $\leftrightarrow$ EE}. SE/EE 모델은 따로, 차원별로도 따로 학습. & 학습 조건(3BA, reward만 다름) 한 줄 명시. \\
+\rowcolor{rowg}
+4p Result 2 & on/off? middle? 무슨 말? & on/off=corner(SE 최적), middle=interior(EE 최적). Overview와 같은 개념. & Overview에 그림 깔면 해결(상동). \\
+\midrule
+
+\textbf{5p}\newline Result 3 & 지금 구조가 scalability 되는 transformer 아님? 차원마다 따로 학습이면 표현이 틀림. & \textcolor{flag}{\textbf{지적이 맞음.}} 차원마다 \textbf{별도 모델}(입력차원=$D$, dimension-agnostic 아님). 한 모델이 차원을 넘어 일반화하는 게 아님. & \textcolor{flag}{제목 ``Scalability'' $\to$ ``Effect of problem dimension''}. (진짜 scalability=dim-agnostic 모델은 future work.) \\
+\rowcolor{rowg}
+5p Result 3 & gap 줄이려고 BA pool 조합 + step 늘린 것? & 맞음. 회복 레버 둘: (a) BA 풀 curation($D{=}20$ 4BA-filter), (b) 평가 step 연장. \textbf{단 EE $D{=}20$은 step으론 회복 안 됨}(데이터 필요). & 현 서술 OK (라벨만 보강). \\
+\midrule
+
+\textbf{6p}\newline Result 4 & Random은 가장 naive하니 당연히 이겨야 하는 것 아닌가? & 일리 있음. 보강: 우리 Random = Lee 2025 ``Brute-force'' baseline과 \textbf{동일}(의미있는 비교점). 핵심은 ``이긴다''가 아니라 \textbf{``Random은 예산 내 최적 50\%도 못 가고 plateau, RIBBO만 도달''}. & 프레이밍 ``beat Random'' $\to$ ``Random이 구조적으로 못 푸는 영역을 RIBBO가 푼다''. \\
+\rowcolor{rowg}
+6p Result 4 & small error bars 가 뭘 의미? & 95\% 신뢰구간($\pm{<}1.5\%$, $n{=}200$--$500$). = 결과가 샘플 운이 아니라 통계적으로 안정적. & 캡션에 ``95\% CI'' 명시. \\
+6p Result 4 & 마지막 문장이 뭘 의미? local 탐색으로 gap 줄인다는 게 result인가? & result 맞음(정직한 한계=hybrid). RIBBO+local search $\approx$ gap 0인데 \textbf{Random+local search도 $\approx$ 0} $\Rightarrow$ local search가 지배, 출발점 무관 $\Rightarrow$ gradient(모델) 있으면 쉬움 $\Rightarrow$ \textbf{RIBBO 가치는 model-free 한정}. & 한 문장에 욱여넣지 말고 별도 bullet로 분리. \\
+\midrule
+
+\textbf{7p}\newline Result 5 & 초록=IFC학습, 파랑/빨강=Rastrigin학습 맞나? & 맞음. green=IFC 학습$\to$IFC test(in-domain 참조), red/blue=Rastrigin 학습$\to$IFC test(as-is/rescaled), gray=Random. & (색은 OK) 범례만 정리. \\
+\rowcolor{rowg}
+7p Result 5 & 어떤 문제(SE/EE)인지 안 써있음 & \textbf{SE $D{=}10$}. & 라벨 추가. \\
+7p Result 5 & 왜 여기선 IFC model과 Random이 거의 같지? (이전엔 차이 컸는데) & 이건 \textbf{SE $D{=}10$ 3BA} = RIBBO가 Random보다 몇 pts만 나은 \textbf{약한 영역}(큰 격차 $+48.7$pt는 EE/5BA-filter). transfer 비교용으로 하필 제일 약한 config라 비슷해 보임. 슬라이드 목적은 RIBBO-vs-Random이 아니라 \textbf{in-domain vs transfer}. & 라벨 + 한 줄 주석(``weakest RIBBO regime; point is transfer''). \\
+\bottomrule
+\end{longtable}
+
+\vspace{4pt}
+{\large\bfseries\color{hdr} B. 교수님 대비 마이너 코멘트 — 정리 + 액션}
+\vspace{3pt}
+
+\begin{longtable}{>{\centering\arraybackslash}p{0.6cm} Q A F}
+\toprule
+\rowcolor{hdr}
+\textcolor{white}{\bfseries \#} & \textcolor{white}{\bfseries 코멘트} & \textcolor{white}{\bfseries 핵심} & \textcolor{white}{\bfseries 액션} \\
+\midrule
+\endhead
+1 & 약어 풀어쓰기 & 통신 약어(CSI/UE/BS/SINR/SE/EE/WMMSE)는 OK. 비통신(ML) 약어는 풀어써야. & RIBBO/RTG/HRR/BA/CMA-ES/BO/SGS/FP/CI 첫 등장 시 full term. 교수님 발표는 전부 풀어쓰기. \\
+\rowcolor{rowg}
+2 & optimum/optimal 용어 신중 & WMMSE는 \textbf{local optimal}이라 ``optimum''이라 단정하면 안 됨(Lee도 ``local optimal''로 표기). EE도 $D{=}10/20$은 near-global. & 기준해를 ``best-known / local-optimal reference''로 relabel. 메트릭명 ``optimality gap''은 Lee가 쓰니 유지 가능. \\
+3 & 그래프 legend/제목 정리 & 부자연스러운 제목·범례 많음. & y축 ``optimality gap (\%)''로 통일, 그래프 위 제목 제거(캡션이 이미 설명). \texttt{scripts/plot\_gap\_figs.py} 수정으로 일괄 반영. \\
+\rowcolor{rowg}
+4 & 숫자/\% 과다 = old$\cdot$피로 & \% 반복은 눈 아픔. & 슬라이드엔 ``더 우수한 성능'' 정성표현, \%는 구두로. 표/그림 \% 톤다운(핵심 1--2개만). \\
+5 & 어색한 영어 표현 & 연구실 논문 톤과 안 맞음. & 구어체 교정: ``flips with dimension'', ``RIBBO saves''(표 헤더), ``it keeps trying high-power settings'', ``Fewer tries'', ``goes below'', ``as-is'' $\to$ 격식체. \\
+\bottomrule
+\end{longtable}
+
+\vspace{2pt}
+{\bfseries 한 줄 결론:} 선배 질문의 \textbf{절반은 슬라이드에 라벨/정의가 빠져서} 생긴 것(SE/EE$\cdot$차원$\cdot$BA구성$\cdot$reference 종류$\cdot$unseen 정의) $\to$ 이것만 채워도 대부분 해소. 나머지는 \textbf{표현 수정}(``Scalability'' 용어, ``optimum'' 용어, Random 프레이밍, hybrid 문장).
+
+\end{document}

@@ -1,0 +1,169 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper,margin=1.1cm]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\setmainfont{Noto Sans CJK KR}
+
+\definecolor{hdr}{RGB}{30,60,110}
+\definecolor{done}{RGB}{20,120,55}
+\definecolor{flag}{RGB}{190,30,30}
+
+\setlength{\parindent}{0pt}
+\linespread{1.12}
+
+\newcommand{\sld}[1]{%
+  \vspace{10pt}\noindent\colorbox{hdr}{\makebox[\dimexpr\linewidth-2\fboxsep][l]{%
+  \rule[-3pt]{0pt}{14pt}\color{white}\bfseries\large~#1}}\par\vspace{6pt}}
+
+\newcommand{\Q}[1]{\vspace{4pt}\noindent\textbf{\textcolor{hdr}{Q.}}~\textbf{#1}\par}
+\newcommand{\An}[1]{\noindent\textbf{답.}~#1\par}
+\newcommand{\Done}[1]{\noindent\textcolor{done}{\textbf{반영 완료.}}~#1\par}
+\newcommand{\Todo}[1]{\noindent\textcolor{flag}{\textbf{남은 결정.}}~#1\par}
+\newcommand{\sep}{\vspace{5pt}{\color{black!18}\hrule height 0.6pt}\vspace{3pt}}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 선배 피드백 — 답변 \& 반영 정리}\\[3pt]
+{\small 2026-06-28 \;/\; \texttt{progress\_0625.pdf} (메인 8장) \;/\; 지표: optimality gap (낮을수록 좋음)}\\[2pt]
+{\small ``답''은 슬라이드 소스·결과파일로 확인한 사실, ``반영 완료''는 갱신된 deck에 실제 적용한 것.}
+\end{center}
+
+\vspace{2pt}
+{\Large\bfseries\color{hdr} A. 슬라이드별 질문 → 답 → 반영}
+
+\sld{2p — Overview}
+
+\Q{corner / interior 가 무슨 뜻?}
+\An{최적해의 \emph{위치}. \textbf{SE}=corner(강링크 풀파워 $x{=}1$, 약링크 끔 $x{=}0$ = ``켜고/끄기''), \textbf{EE}=interior(중간 전력 $x\approx0.18$).}
+\Done{Overview에 SE corner / EE interior 한 줄 설명 추가 (R2의 on/off$\cdot$middle 혼란도 동시 해소).}
+\sep
+
+\Q{SE는 WMMSE, EE는 exhaustive search로 푼 건가?}
+\An{SE 기준해=WMMSE 맞음. EE는 ``exhaustive'' 아님: \textbf{$D{=}3$만 전수 grid}, \textbf{$D{=}10/20$은 multi-start gradient}(40 restart, near-global 참조).}
+\Done{기준해를 $D$별로 분리 표기 (SE=WMMSE / EE $D{=}3$ 전수 / $D{=}10,20$ multistart).}
+\sep
+
+\Q{3BA = 3개 알고리즘으로 RIBBO 학습?}
+\An{맞음. 3 BA(Random, HillClimbing, CMA-ES)가 만든 \textbf{탐색 궤적}이 학습데이터. RIBBO 자체는 트랜스포머 1개.}
+\Done{BA pool 정의 명시 + Method에 ``a transformer''로 RIBBO가 모델 1개임을 명확화.}
+\sep
+
+\Q{unseen channel = 같은 분포? 완전 다른 분포?}
+\An{\textbf{같은 Rayleigh 분포의 새 realization} (train=채널 0--19, eval=30--). ``완전 다른 분포''는 R5의 Rastrigin transfer.}
+\Done{``unseen = new Rayleigh $\mathrm{CN}(0,1)$ realizations (same distribution)'' 명시.}
+
+\sld{3p — Result 1 (BA-pool × Dimension)}
+
+\Q{어떤 문제로 학습? 그래프는 SE? EE?}
+\An{\textbf{SE}.}
+\Done{제목에 ``(SE)'' 추가.}
+\sep
+
+\Q{5BA에 Rand+SGS를 추가한 건가?}
+\An{\textcolor{flag}{\textbf{반대.}} 5BA-filter는 7BA에서 Random+SGS를 \textbf{뺀} 것. 3BA\{Random, HC, CMA-ES\}와 5BA-filter\{HC, RegEvol, Eagle, CMA-ES, BoTorch\}는 \textbf{포함관계도 아님}.}
+\Done{BA 구성 3줄 표기(3BA / 5BA-filter / 7BA=5BA-filter+Random+SGS)로 비포함관계 명확화.}
+\sep
+
+\Q{Song 2024 이 뭔지?}
+\An{RIBBO 논문 (Song et al., IJCAI 2025). ``well-performing AND diverse BA'' 권고 출처.}
+\Done{``the RIBBO paper''로 표기.}
+\sep
+
+\Q{왜 ``best behavior'' 라고 썼는지?}
+\An{``best BA pool''(최적 BA 풀이 차원에 따라 뒤집힘) 뜻. 표현이 어색했음.}
+\Done{``Which BA pool works best depends on the dimension''로 재서술 (``flips'' 제거).}
+
+\sld{4p — Result 2 (SE vs EE)}
+
+\Q{무슨 상황으로 학습?}
+\An{같은 3BA 풀, \textbf{reward만 SE $\leftrightarrow$ EE}. SE/EE 모델은 따로, 차원별로도 따로 학습.}
+\Done{``same 3BA pool; separate model per reward and dimension'' 명시.}
+\sep
+
+\Q{on/off? middle? 무슨 말?}
+\An{on/off=corner(SE 최적), middle=interior(EE 최적). Overview와 같은 개념.}
+\Done{Overview 설명 + heading ``interior (mid power)''로 해결.}
+
+\sld{5p — Result 3 (차원 효과)}
+
+\Q{scalability 되는 transformer 아님? 차원마다 따로 학습이면 표현이 틀림.}
+\An{\textcolor{flag}{\textbf{지적이 맞음.}} 차원마다 \textbf{별도 모델}(입력차원=$D$, dimension-agnostic 아님). 한 모델이 차원을 넘어 일반화하는 게 아님.}
+\Done{제목 ``Scalability'' $\to$ ``Effect of Problem Dimension'' + ``one model per dimension, not dimension-agnostic'' 명시. (진짜 dim-agnostic 모델은 future work.)}
+\sep
+
+\Q{gap 줄이려고 BA pool 조합 + step 늘린 것?}
+\An{맞음. (a) BA 풀 curation, (b) 평가 step 연장. \textbf{단 EE $D{=}20$은 step으론 회복 안 됨}(데이터 필요).}
+\Done{두 레버 + EE $D{=}20$ 예외를 본문에 유지/명시.}
+
+\sld{6p — Result 4 (Robustness)}
+
+\Q{Random은 가장 naive하니 당연히 이겨야 하는 것 아닌가?}
+\An{일리 있음. 우리 Random = Lee 2025 ``Brute-force'' baseline과 \textbf{동일}. 핵심은 ``이긴다''가 아니라 \textbf{``Random은 예산 내 최적 50\%도 못 가고 plateau, RIBBO만 도달''}(특히 EE interior).}
+\Done{``Random(=Lee Brute-force) plateaus $\dots$ RIBBO goes where uniform sampling cannot'' 프레이밍으로 수정.}
+\sep
+
+\Q{small error bars 가 뭘 의미?}
+\An{95\% 신뢰구간($\pm{<}1.5\%$, $n{=}200$--$500$). 결과가 샘플 운이 아니라 통계적으로 안정적.}
+\Done{``Statistically stable: 95\% CI'' 명시.}
+\sep
+
+\Q{마지막 문장이 뭘 의미? (local 탐색으로 gap 줄인다는 게 result?)}
+\An{result 맞음(hybrid=정직한 한계). RIBBO+local search $\approx$ gap 0인데 \textbf{Random+local search도 $\approx$ 0} $\Rightarrow$ local search가 지배, 출발점 무관 $\Rightarrow$ 모델 있으면 쉬움 $\Rightarrow$ \textbf{RIBBO 가치는 model-free 한정}.}
+\Done{별도 bullet로 분리. \;(+그림: per-channel CDF 2패널을 상하로 쌓고 폰트 키워 가독성 확보.)}
+
+\sld{7p — Result 5 (Transfer)}
+
+\Q{초록=IFC학습, 파랑/빨강=Rastrigin학습 맞나?}
+\An{맞음. green=IFC 학습$\to$IFC test(in-domain), red/blue=Rastrigin 학습$\to$IFC test(unchanged/rescaled), gray=Random.}
+\Done{(색 OK) 범례/캡션 정리.}
+\sep
+
+\Q{어떤 문제(SE/EE)인지 안 써있음.}
+\An{\textbf{SE $D{=}10$}.}
+\Done{``SE $D{=}10$'' 라벨 추가.}
+\sep
+
+\Q{왜 여기선 IFC model과 Random이 거의 같지?}
+\An{이건 \textbf{SE $D{=}10$ 3BA} = RIBBO가 Random보다 몇 pts만 나은 \textbf{약한 영역}(큰 격차 $+48.7$pt는 EE/5BA-filter). 목적은 RIBBO-vs-Random이 아니라 \textbf{in-domain vs transfer}.}
+\Done{``weak SE 3BA config; the point is in-domain vs.\ transfer'' 주석 추가.}
+
+\vspace{10pt}
+{\Large\bfseries\color{hdr} B. 교수님 대비 마이너 코멘트}
+
+\sld{발표자료 톤}
+
+\Q{1. 약어 풀어쓰기}
+\An{통신 약어(CSI/UE/BS/SINR/SE/EE/WMMSE)는 OK, 비통신(ML) 약어는 풀어써야.}
+\Done{RIBBO / RTG / HRR / BA / FP 첫 등장 시 full term으로 풀어씀.}
+\Todo{CMA-ES / BO / SGS 등도 풀어쓸지 (통신 청중엔 익숙하나 교수님 대비 안전하게 풀지) 결정.}
+\sep
+
+\Q{2. optimum/optimal 용어 신중}
+\An{WMMSE는 \textbf{local optimal}이라 ``optimum''이라 단정 금지(Lee도 ``local optimal''). EE도 $D{=}10/20$은 near-global.}
+\Done{기준해를 ``reference (local-optimal)''로 relabel, 그래프 기준선 ``reference (gap 0)''. 메트릭명 ``optimality gap''은 Lee 표기라 유지.}
+\sep
+
+\Q{3. 그래프 legend/제목 정리}
+\An{부자연스러운 그래프 위 제목·범례 많음.}
+\Done{모든 메인 도면 위 제목 제거, y축 ``optimality gap (\%)''로 통일 (\texttt{plot\_gap\_figs.py} 일괄 수정).}
+\sep
+
+\Q{4. 숫자/\% 과다 = old·피로}
+\An{\% 반복은 눈 아픔. 정성표현 위주 + \%는 구두로.}
+\Todo{표는 근거라 일단 유지 중. 본문 \%를 어디까지 정성표현으로 바꿀지(핵심 1--2개만 남길지) 결정 필요.}
+\sep
+
+\Q{5. 어색한 영어 표현}
+\An{연구실 논문 톤과 안 맞음.}
+\Done{눈에 띄는 구어체 교정(``flips with dimension'', ``RIBBO saves'', ``as-is'', ``Fewer tries'', ``it keeps trying high-power'').}
+\Todo{원하면 슬라이드 전체를 논문 톤으로 한 번 더 다듬기.}
+
+\vspace{10pt}
+\noindent\colorbox{black!8}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{한 줄 요약:} 선배 질문의 절반은 \textbf{라벨/정의 누락}(SE/EE$\cdot$차원$\cdot$BA 구성$\cdot$reference 종류$\cdot$unseen)이라 채워 넣어 해소했고, 나머지 \textbf{표현 수정}(Scalability$\to$Effect of dimension, optimum$\to$reference, Random 프레이밍, hybrid 분리)도 반영. \textbf{남은 결정 3건}(통신약어 풀이 / 숫자 톤다운 정도 / 영어 추가 손질)만 정하면 됨.}}
+
+\end{document}

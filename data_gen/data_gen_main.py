@@ -1,24 +1,26 @@
-import os
-os.environ['XLA_FLAGS'] = ('--xla_force_host_platform_device_count=1 --xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1')
-os.environ['JAX_PLATFORM_NAME'] = 'cpu'
+from vizier import pyvizier as vz
+from utils import seed_everything
+from botorch_designer import BotorchDesigner
+from regularized_evolution_designer import RegularizedEvolutionDesigner
+from hill_climbing_designer import HillClimbingDesigner
+from vizier.benchmarks import experimenters
+from vizier.algorithms import designers
+from vizier import algorithms as vza
+import torch
+import numpy as np
 from typing import Sequence
+import os
+os.environ['XLA_FLAGS'] = (
+    '--xla_force_host_platform_device_count=1 --xla_cpu_multi_thread_eigen=false intra_op_parallelism_threads=1')
+os.environ['JAX_PLATFORM_NAME'] = 'cpu'
 try:
     import ujson as json
 except:
     import json
 
-import numpy as np
-import torch
-from vizier import pyvizier as vz 
-from vizier import algorithms as vza
-from vizier.algorithms import designers
-from vizier.benchmarks import experimenters
 
-from hill_climbing_designer import HillClimbingDesigner
-from regularized_evolution_designer import RegularizedEvolutionDesigner
 # from hebo_designer import HeBODesigner
-from botorch_designer import BotorchDesigner
-from utils import seed_everything
+
 
 def designer_factory(name, problem, seed):
     designer_config = {
@@ -27,7 +29,7 @@ def designer_factory(name, problem, seed):
             'config': {'search_space': problem.search_space, 'seed': seed},
         },
         'GridSearch': {
-            'cls': designers.GridSearchDesigner, 
+            'cls': designers.GridSearchDesigner,
             'config': {'search_space': problem.search_space, 'double_grid_resolution': 10},
         },
         'ShuffledGridSearch': {
@@ -86,7 +88,7 @@ if __name__ == '__main__':
         seed_everything(args.seed)
 
     if args.problem == 'hpob':
-        from hpob_problem_statement import problem_statement 
+        from hpob_problem_statement import problem_statement
         problem, f = problem_statement(
             args.search_space_id,
             args.dataset_id,
@@ -106,6 +108,12 @@ if __name__ == '__main__':
         )
     elif args.problem == 'real_world_problem':
         from data_gen.real_world_problem_statement import problem_statement
+        problem, f = problem_statement(
+            args.search_space_id,
+            args.dataset_id,
+        )
+    elif args.problem == 'ifc':
+        from ifc_problem_statement import problem_statement
         problem, f = problem_statement(
             args.search_space_id,
             args.dataset_id,
@@ -151,5 +159,6 @@ if __name__ == '__main__':
         data['X'].append(X_tensor.tolist())
         data['y'].append(objective)
 
+    os.makedirs(os.path.dirname(args.out_name), exist_ok=True)
     with open(args.out_name, 'w') as f:
         json.dump(data, f)

@@ -8,6 +8,7 @@ from offlinerllib.module.net.attention.positional_encoding import get_pos_encodi
 from offlinerllib.module.net.attention.base import NoDecayParameter
 from offlinerllib.module.net.mlp import MLP
 
+# NOTE : Transformer Backbone
 class DecisionTransformer(GPT2):
     def __init__(
         self, 
@@ -29,7 +30,7 @@ class DecisionTransformer(GPT2):
             embed_dim=embed_dim, 
             num_layers=num_layers, 
             num_heads=num_heads, 
-            causal=True, 
+            causal=True, # NOTE : causal attention mask (True)
             attention_dropout=attention_dropout, 
             residual_dropout=residual_dropout, 
             embed_dropout=embed_dropout, 
@@ -44,6 +45,7 @@ class DecisionTransformer(GPT2):
             self.bos_y_embed = NoDecayParameter(torch.zeros([1, embed_dim]).float(), requires_grad=True)
             torch.nn.init.normal_(self.bos_x_embed)
             torch.nn.init.normal_(self.bos_y_embed)
+        # NOTE : positional encoding
         self.pos_encoding = get_pos_encoding(pos_encoding, embed_dim, seq_len+1)
         self.x_embed = nn.Linear(x_dim, embed_dim)
         self.y_embed = nn.Linear(y_dim, embed_dim)
@@ -53,9 +55,10 @@ class DecisionTransformer(GPT2):
         # how to mix the inputs
         self.mix_method = mix_method
         if self.mix_method == "concat":
+            # NOTE : concat the x, y, and regret, 2-layer MLP
             self.input_proj = MLP(input_dim=3*embed_dim, hidden_dims=[embed_dim, embed_dim, ])
             # self.input_proj = nn.Linear(3*embed_dim, embed_dim)
-            
+    # NOTE: encoding flow (embed->concat->MLP->positional encoding)        
     def encode(self, x, y, regrets, timesteps, key_padding_mask):
         B, L, X = x.shape
         x_embedding = self.x_embed(x)

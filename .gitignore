@@ -1,11 +1,22 @@
+# --- Python ---
 **/__pycache__
 **/*.pyc
-*.json
-cache
-log
+
+# --- experiment outputs that are large / regenerable ---
+# Keep generated data, cache, and results in the repo (used to resume work on
+# another machine). Only the bulky intermediate training snapshots are excluded:
+# all *.ckpt are ignored, then the final checkpoint per run is force-added.
+log/**/*.ckpt
+wandb
+saved_log
+scripts/ckpt_configs
 plot/*
 !plot/*.py
-data
-wandb
-scripts/ckpt_configs
-saved_log
+
+# --- copyrighted papers (do not redistribute) ---
+/*.pdf
+
+# --- local session / scratch files ---
+.session_restart.log
+.last_session_restart
+log_convergence.txt

@@ -1,0 +1,37 @@
+======================================================================
+1) SE regression: vectorized ifc_rates vs old scalar loop (D=3)
+   max |vectorized - scalar| over 100 points = 2.66e-15  (OK)
+
+2) WMMSE sanity still passes (SE, D=3, vs brute force 41^3), 10 channels
+   WMMSE >= bruteforce on 10/10 channels (expect 10/10 up to grid res)
+
+3) EE multistart vs brute force (D=3, IFCEE), 8 channels
+    ch   bruteEE   multiEE      diff           best_x (multistart)
+     0    0.3208    0.3209  1.17e-04           [0.188 0.    0.   ]
+     1    0.2190    0.2191  3.21e-05           [0.    0.227 0.08 ]
+     2    0.5459    0.5463  4.55e-04           [0.    0.131 0.   ]
+     3    1.0876    1.0877  4.78e-05           [0.079 0.    0.   ]
+     4    0.5543    0.5545  1.77e-04           [0.    0.037 0.098]
+     5    0.8010    0.8020  9.70e-04           [0.022 0.133 0.086]
+     6    0.5005    0.5005  9.68e-07              [0.   0.   0.14]
+     7    0.2685    0.2686  3.95e-05           [0.103 0.184 0.   ]
+
+4) Interior vs corner: optimum x for SE vs EE (D=3, 6 channels)
+   (SE optima cluster at 0/1 corners; EE optima are interior)
+    ch                   SE x*                   EE x*
+     0              [1. 0. 0.]        [0.18 0.   0.  ]
+     1              [0. 1. 0.]        [0.   0.22 0.08]
+     2              [0. 1. 0.]        [0.   0.14 0.  ]
+     3              [1. 0. 0.]        [0.08 0.   0.  ]
+     4              [0. 0. 1.]        [0.   0.04 0.1 ]
+     5              [0. 1. 1.]        [0.02 0.14 0.08]
+
+5) Random-action EE reward distribution (D=3, channel 0, 5000 samples)
+   random EE: min=0.047 mean=0.099 max=0.297 | optimum=0.321
+   random reaches 92.4% of optimum with 5000 random samples
+
+6) EE D=10 multistart (IFCEED10), 3 channels (no brute force, sanity only)
+   ch0: EE*=0.8016, interior coords=3/10, x*=[0.   0.   0.   0.03 0.   0.12 0.15 0.   0.   0.  ]
+   ch1: EE*=1.4216, interior coords=4/10, x*=[0.   0.   0.06 0.06 0.   0.02 0.06 0.07 0.   0.  ]
+   ch2: EE*=0.9715, interior coords=3/10, x*=[0.01 0.   0.   0.   0.03 0.   0.12 0.   0.   0.11]
+======================================================================

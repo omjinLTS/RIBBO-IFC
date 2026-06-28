@@ -1,0 +1,4 @@
+\beamer@sectionintoc {1}{Problem}{2}{0}{1}
+\beamer@sectionintoc {2}{Method}{3}{0}{2}
+\beamer@sectionintoc {3}{Implementation}{4}{0}{3}
+\beamer@sectionintoc {4}{Results}{5}{0}{4}

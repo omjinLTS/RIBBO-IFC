@@ -33,7 +33,7 @@ bbob_func_names = (
 )
 bbob_func_dict = dict()
 for name in bbob_func_names:
-    bbob_func_dict[name] = getattr(bbob, name) # minimize
+    bbob_func_dict[name] = getattr(bbob, name)  # minimize
 
 log = logging.getLogger(__name__)
 
@@ -50,9 +50,9 @@ class SyntheticNumpy:
     ):
         assert search_space_id in bbob_func_dict
         self.search_space = search_space_id
-        self.dataset_id = dataset_id # seed
+        self.dataset_id = dataset_id  # seed
         self.dim = dim
-        
+
         self.func = bbob_func_dict[search_space_id]
         self.lb = np.ones(dim) * lb
         self.ub = np.ones(dim) * ub
@@ -67,7 +67,7 @@ class SyntheticNumpy:
         for x in X:
             y = self.func(x, int(self.dataset_id))
             Y.append(y)
-        return - np.array(Y).reshape(-1, 1) # maximize
+        return - np.array(Y).reshape(-1, 1)  # maximize
 
     def reset_task(self, dataset_id: str):
         self.dataset_id = dataset_id
@@ -123,7 +123,8 @@ class SyntheticMetaProblem(MetaProblemBase):
 
         if isinstance(self.search_space_id, list):
             eval_id = self.search_space_id[0]
-            logging.warning('Evaluating on the first one for multiple search spaces')
+            logging.warning(
+                'Evaluating on the first one for multiple search spaces')
         else:
             eval_id = self.search_space_id
         self.func = SyntheticNumpy(
@@ -148,7 +149,8 @@ class SyntheticMetaProblem(MetaProblemBase):
             filter_data=filter_data,
         )
 
-        self.dataset.transform_x(partial(self.transform_x, reverse=True, lb=self.lb, ub=self.ub))
+        self.dataset.transform_x(
+            partial(self.transform_x, reverse=True, lb=self.lb, ub=self.ub))
 
         self.get_problem_info()
 
@@ -159,11 +161,13 @@ class SyntheticMetaProblem(MetaProblemBase):
         assert X.ndim == 2
         assert (X >= -1 - 1e-6).all() and (X <= 1 + 1e-6).all()
         if isinstance(self.search_space_id, list):
-            logging.warning('Evaluating on the first one for multiple search spaces')
+            logging.warning(
+                'Evaluating on the first one for multiple search spaces')
 
         X_np = X.cpu().detach().numpy()
         Y_np = self.func(self.transform_x(X_np, lb=self.lb, ub=self.ub))
-        normalized_y, normalized_regret = self.get_normalized_y_and_regret(Y_np)
+        normalized_y, normalized_regret = self.get_normalized_y_and_regret(
+            Y_np)
         return torch.from_numpy(normalized_y).reshape(-1, 1), {
             'raw_y': torch.from_numpy(Y_np).reshape(-1, 1),
             'normalized_onestep_regret': torch.from_numpy(normalized_regret).reshape(-1, 1),

@@ -1,0 +1,6 @@
+torch == 2.0.1
+offlinerllib==0.1.1
+utilsrl==0.6.3
+google-vizier==0.1.9
+gpytorch==1.11
+botorch==0.9.4

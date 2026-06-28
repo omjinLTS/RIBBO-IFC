@@ -52,7 +52,7 @@ class DecisionTransformerDesigner(BaseDesigner):
                 output_dim=x_dim, 
                 hidden_dims=[embed_dim, ]
             )
-        elif x_type == "stochastic":
+        elif x_type == "stochastic": # NOTE : stochastic actor (Gaussian)
             self.x_head = SquashedGaussianActor(
                 backend=torch.nn.Identity(), 
                 input_dim=embed_dim, 
@@ -93,11 +93,11 @@ class DecisionTransformerDesigner(BaseDesigner):
             self.total_parameters.extend(self.y_head.parameters())
         
     @torch.no_grad()
-    def reset(self, eval_num=1, init_regret=0.0):
+    def reset(self, eval_num=1, init_regret=0.0): # NOTE : R_0 initialization
         self.past_x = torch.zeros([eval_num, self.seq_len+1, self.x_dim], dtype=torch.float).to(self.device)
         self.past_y = torch.zeros([eval_num, self.seq_len+1, 1], dtype=torch.float).to(self.device)
         self.past_regrets = torch.zeros([eval_num, self.seq_len+1, 1], dtype=torch.float).to(self.device)
-        self.past_regrets[:, 0] = init_regret
+        self.past_regrets[:, 0] = init_regret # R_0 = 0
         self.timesteps = torch.arange(self.seq_len+1).long().to(self.device).reshape(1, self.seq_len+1).repeat(eval_num, 1)
         self.step_count = 0
         
@@ -126,7 +126,7 @@ class DecisionTransformerDesigner(BaseDesigner):
             elif regret_strategy == "clip":
                 # set the regret, clipped to [0, +\infty]
                 self.past_regrets[:, self.step_count+1] = (self.past_regrets[:, self.step_count] - last_onestep_regret).clip(0.0, 9e9)
-            elif regret_strategy == "relabel":
+            elif regret_strategy == "relabel": # NOTE : HRR(Hindsight Regret Relabelling) logic
                 neg_diff = (self.past_regrets[:, self.step_count] - last_onestep_regret).clip(-9e9, 0.0)
                 self.past_regrets[:, self.step_count+1] = self.past_regrets[:, self.step_count] - last_onestep_regret
                 self.past_regrets[:, :self.step_count+2] -= neg_diff.unsqueeze(1)
@@ -166,7 +166,7 @@ class DecisionTransformerDesigner(BaseDesigner):
                 x.detach(), 
                 reduction="none"
             )
-        elif isinstance(self.x_head, SquashedGaussianActor):
+        elif isinstance(self.x_head, SquashedGaussianActor): # NOTE : NLL loss for Gaussian actor
             x_loss = - self.x_head.evaluate(
                 x_pred, 
                 x.detach(), 
@@ -240,6 +240,7 @@ def evaluate_decision_transformer_designer(
                 deterministic=deterministic, 
                 regret_strategy=regret_strategy, 
             )
+            # NOTE : Environment Hook - My simulator goes here
             last_normalized_y, info = problem.forward(last_x.cpu())
             last_y = info["raw_y"]
             last_normalized_onestep_regret = info["normalized_onestep_regret"]
