@@ -55,6 +55,7 @@ METHOD_STYLE = {  # color, label
     "bo":    ("#2563EB", "BO (GP-EI)"),
     "cmaes": ("#059669", "CMA-ES"),
     "de":    ("#D97706", "DE"),
+    "ga":    ("#DB2777", "GA"),
     "rand":  ("#9CA3AF", "Random"),
 }
 NP_TARGET = 24  # DE population target for a tight 300-eval budget
@@ -171,7 +172,74 @@ def rollout_bo(func, x_dim, budget, seed, n_init=None, restarts=3, raw_samples=3
     return _pad(bsf, budget)
 
 
-ROLLOUT = {"de": rollout_de, "cmaes": rollout_cmaes, "bo": rollout_bo}
+def rollout_ga(func, x_dim, budget, seed):
+    """Real-coded genetic algorithm, numpy-only (no extra dependency):
+    tournament selection + SBX crossover + polynomial mutation + elitism.
+    Standard textbook operators with fixed (untuned) parameters identical to
+    pymoo/NSGA-II defaults. This is the GA family Lee et al. use as a baseline.
+    """
+    rng = np.random.default_rng(int(seed) + 5000)
+    pop_size = 20
+    pc, eta_c = 0.9, 15.0          # crossover prob, SBX distribution index
+    pm, eta_m = 1.0 / x_dim, 20.0  # per-gene mutation prob, poly-mut index
+    best = [-np.inf]
+    bsf = []
+
+    def feval(x):
+        xc = np.clip(x, 0.0, 1.0)
+        y = float(func(xc[None, :]).ravel()[0])
+        if y > best[0]:
+            best[0] = y
+        bsf.append(best[0])
+        return y
+
+    def tournament(pop, fit):
+        i, j = rng.integers(0, len(pop), size=2)
+        return pop[i].copy() if fit[i] >= fit[j] else pop[j].copy()
+
+    def sbx(p1, p2):
+        c1, c2 = p1.copy(), p2.copy()
+        if rng.random() <= pc:
+            for k in range(x_dim):
+                if rng.random() <= 0.5 and abs(p1[k] - p2[k]) > 1e-12:
+                    u = rng.random()
+                    beta = (2 * u) ** (1.0 / (eta_c + 1)) if u <= 0.5 \
+                        else (1.0 / (2 * (1 - u))) ** (1.0 / (eta_c + 1))
+                    c1[k] = 0.5 * ((1 + beta) * p1[k] + (1 - beta) * p2[k])
+                    c2[k] = 0.5 * ((1 - beta) * p1[k] + (1 + beta) * p2[k])
+        return np.clip(c1, 0.0, 1.0), np.clip(c2, 0.0, 1.0)
+
+    def poly_mut(x):
+        xm = x.copy()
+        for k in range(x_dim):
+            if rng.random() <= pm:
+                u = rng.random()
+                delta = (2 * u) ** (1.0 / (eta_m + 1)) - 1.0 if u < 0.5 \
+                    else 1.0 - (2 * (1 - u)) ** (1.0 / (eta_m + 1))
+                xm[k] += delta
+        return np.clip(xm, 0.0, 1.0)
+
+    pop = rng.uniform(0, 1, (pop_size, x_dim))
+    fit = np.full(pop_size, -np.inf)
+    for k in range(pop_size):
+        if len(bsf) >= budget:
+            break
+        fit[k] = feval(pop[k])
+
+    while len(bsf) < budget:
+        elite = int(np.argmax(fit))
+        newpop, newfit = [pop[elite].copy()], [fit[elite]]  # elitism (no re-eval)
+        while len(newpop) < pop_size and len(bsf) < budget:
+            c1, c2 = sbx(tournament(pop, fit), tournament(pop, fit))
+            for c in (poly_mut(c1), poly_mut(c2)):
+                if len(newpop) < pop_size and len(bsf) < budget:
+                    newfit.append(feval(c))
+                    newpop.append(c)
+        pop, fit = np.array(newpop), np.array(newfit)
+    return _pad(bsf, budget)
+
+
+ROLLOUT = {"de": rollout_de, "cmaes": rollout_cmaes, "bo": rollout_bo, "ga": rollout_ga}
 
 
 def _pad(bsf, budget):
@@ -224,7 +292,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--cases", nargs="+", default=["ee_d10"], choices=list(CASES))
     ap.add_argument("--methods", nargs="+", default=["de", "cmaes", "bo"],
-                    choices=["de", "cmaes", "bo"])
+                    choices=["de", "cmaes", "bo", "ga"])
     ap.add_argument("--n", type=int, default=50)
     ap.add_argument("--force", action="store_true")
     ap.add_argument("--metric", choices=["gap", "raw"], default="gap",

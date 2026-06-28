@@ -1,0 +1,78 @@
+\documentclass[12pt]{article}
+\usepackage[a4paper,margin=1.15cm]{geometry}
+\usepackage{fontspec}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\setmainfont{Noto Sans CJK KR}
+
+\definecolor{hdr}{RGB}{30,60,110}
+\definecolor{acc}{RGB}{20,120,55}
+\definecolor{flag}{RGB}{190,30,30}
+
+\setlength{\parindent}{0pt}
+\linespread{1.13}
+
+\newcommand{\fsec}[1]{\vspace{8pt}\noindent{\color{hdr}\bfseries\large #1}\par\vspace{3pt}}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries 발표초안 팔로업 --- 피드백 반영 \& 추가 실험}\\[3pt]
+{\small 2026-06-29 \;/\; 첨부: 답변지(\texttt{senior\_feedback\_answers}), 업데이트 deck(\texttt{progress\_0625.pdf})}
+\end{center}
+
+\vspace{4pt}
+선배님, 주신 피드백 정리해서 답변드리고, 추가로 제안하신 비교 실험까지 돌려봤습니다.
+
+\fsec{1. 슬라이드 피드백 --- 다 반영했습니다}
+질문 주신 것 대부분이 슬라이드에 \textbf{라벨/정의가 빠져서} 생긴 혼란이라, 그것부터 채웠습니다.
+\begin{itemize}[leftmargin=1.4em,itemsep=1.5pt,topsep=2pt]
+    \item Overview에 SE=corner(켜고/끄기) / EE=interior(중간전력) 개념, 기준해를 $D$별로 분리(SE=WMMSE / EE $D{=}3$ 전수 / $D{=}10,20$ multi-start), ``unseen=같은 분포의 새 채널'' 명시.
+    \item 각 Result에 SE/EE$\cdot$차원 라벨 추가, BA(behavior-algorithm) 풀 구성 명시(5BA-filter는 7BA에서 Random+SGS를 \emph{뺀} 것).
+    \item ``Scalability'' $\to$ ``Effect of problem dimension''(차원마다 별도 모델이라 표현 정정), ``optimum'' $\to$ ``reference(local-optimal)''.
+    \item Robustness의 Random 비교 프레이밍 보강, hybrid(local search) 한계 문장 분리, 그래프 제목 제거 + y축 통일.
+\end{itemize}
+{\small (질문별 상세 답변은 첨부 ``답변지'' 참고.)}
+
+\fsec{2. 추가 실험 --- GA 포함 강한 black-box 비교 \textnormal{\small(선배 제안 반영)}}
+``유전알고리즘(GA)이랑 비교스킴'' 말씀에 따라, RIBBO를 \textbf{동일 조건}(같은 unseen 채널, 같은 최적해 기준, 같은 300-eval 예산, 전부 model-free)에서 강한 black-box 최적화기들과 비교했습니다: \textbf{GA, DE(차분진화), CMA-ES, BO(베이지안)}.
+
+\vspace{3pt}
+\begin{center}\small
+\begin{tabular}{lrrrrr}
+\toprule
+optimality gap (\%) $\downarrow$ & RIBBO & GA & DE & CMA-ES & Random \\
+\midrule
+EE $D{=}10$           & \textbf{21.5} & 71.2 & 48.6 & 26.8 & 70.6 \\
+EE $D{=}20$           & \textbf{69.8} & 83.7 & 74.4 & 64.8 & 82.8 \\
+SE $D{=}10$ (5BA-filter) & \textbf{28.4} & 56.2 & 40.9 & 26.4 & 56.7 \\
+SE $D{=}20$ (4BA-filter) & \textbf{58.0} & 69.7 & 61.5 & 51.3 & 68.5 \\
+\midrule
+EE $D{=}3$ (저차원)   & 3.2 & 6.0 & 0.8 & \textbf{-0.0} & 17.6 \\
+\bottomrule
+\end{tabular}
+\end{center}
+{\small (n$=$200 채널. BO는 비용이 커 n$=$30 별도 측정: EE $D{=}10$서 BO 52.6 $\to$ RIBBO가 전 채널 우세.)}
+
+\vspace{4pt}
+{\color{acc}\bfseries 좋은 소식:} \textbf{EE $D{=}10$에서 RIBBO가 GA/DE/CMA-ES/BO 4종을 모두, 거의 전 채널에서 이깁니다.} 특히 RIBBO는 예산 초반(적은 평가 횟수)에 빠르게 내려가는 sample-efficiency가 강점이라, 측정비용 큰 실시간 무선에 의미가 있습니다.
+
+\vspace{2pt}
+{\color{flag}\bfseries 정직한 한계:} 모든 곳에서 이기는 건 아닙니다.
+\begin{itemize}[leftmargin=1.4em,itemsep=1.5pt,topsep=2pt]
+    \item GA는 빠듯한 예산에선 가장 약함(고차원서 Random과 거의 동급) --- ``RIBBO$>$GA''는 ``RIBBO$>$CMA-ES''만큼 강한 주장은 아님.
+    \item \textbf{CMA-ES가 가장 센 경쟁자}로, 저차원$\cdot$약한 SE 등 대부분 regime에서 RIBBO보다 낫습니다.
+    \item 예산을 1000-eval로 길게 주면 CMA-ES가 사실상 최적까지 도달(EE $D{=}10$ gap $0.4$) --- 즉 이 문제는 ``예산 충분하면 적응형 최적화기로 풀리는'' 편입니다. RIBBO의 니치는 \textbf{고차원$\cdot$EE$\cdot$적은 예산} 코너로 좁혀집니다.
+\end{itemize}
+
+\fsec{3. 다음 단계}
+지금 비교는 전부 고전/black-box 기준선입니다. 다음 핵심은 같은 model-free 전제인 \textbf{LLMO(Lee 2025)와 정면 비교} --- 추론 비용(RIBBO 신경망 1회 vs 매 step LLM 호출)과 적은-예산 수렴 속도에서 RIBBO의 실익을 확인할 계획입니다.
+
+\vspace{8pt}
+\noindent\colorbox{black!8}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{한 줄:} 피드백은 전부 반영했고, GA 포함 강한 baseline까지 비교한 결과 RIBBO의 깨끗한 우위는 \textbf{EE $D{=}10$ + 적은 예산}으로 또렷해졌습니다. 한계(CMA-ES가 대부분 더 셈, 충분 예산이면 고전법으로 풀림)도 정직하게 정리했고, 다음은 LLMO 정면 비교입니다.}}
+
+\end{document}

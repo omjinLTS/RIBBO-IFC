@@ -31,6 +31,28 @@ RIBBO/CMA-ES에 크게 뒤짐. **비교는 공정.** (BO의 10차원 부진은 G
 | SE D=20 (3BA) | 66.8 | 61.5 | **51.3** | 68.5 | 22% / 2% |
 | SE D=20 (4BA-filter) | 58.0 | 61.5 | **51.3** | 68.5 | 75% / 12% |
 
+## 결과 1b — GA(유전알고리즘) 추가 (n=200, final gap %, 2026-06-29 추가)
+
+선배가 **"GA랑 비교스킴"** 직접 언급 → 표준 real-coded GA를 동일 조건으로 추가.
+- **GA 구현**: numpy-only(새 의존성 없음). 토너먼트 선택 + SBX 교차(η=15) + 다항식 변이(η=20, p=1/D) + elitism.
+  pop=20, p_c=0.9. **pymoo/NSGA-II 기본 연산자와 동일**, 파라미터 고정(튜닝 안 함). 코드 `scripts/eval_ifc_baselines.py:rollout_ga`.
+
+| Case | RIBBO | GA | DE | CMA-ES | Random | RIBBO 승률 vs GA |
+|---|---|---|---|---|---|---|
+| EE D=3 | 3.2 | 6.0 | 0.8 | **-0.0** | 17.6 | 44% (저차원 GA도 거의 최적) |
+| **EE D=10** | **21.5** | 71.2 | 48.6 | 26.8 | 70.6 | **100%** ★ |
+| EE D=20 | 69.8 | 83.7 | 74.4 | **64.8** | 82.8 | **100%** |
+| SE D=10 (3BA) | 52.2 | 56.2 | 40.9 | **26.4** | 56.7 | 59% |
+| SE D=10 (5BA-filter) | **28.4** | 56.2 | 40.9 | 26.4 | 56.7 | **100%** |
+| SE D=20 (3BA) | 66.8 | 69.7 | 61.5 | **51.3** | 68.5 | 68% |
+| SE D=20 (4BA-filter) | 58.0 | 69.7 | 61.5 | **51.3** | 68.5 | **100%** |
+
+- **핵심**: 300-eval 빠듯한 예산에서 **vanilla GA는 강baseline 중 가장 약함**(D=10/20서 Random과 거의 동급 — pop20×15세대로
+  10차원 수렴 부족, EA가 CMA-ES/DE보다 sample-efficiency 낮은 알려진 특성). D=3 저차원만 거의 최적(6.0).
+- **RIBBO는 자기 무대(EE D10/D20, curated SE D10/D20)에서 GA를 전 채널(100%) 격파.** 약한 3BA SE에선 부분 우세(59~68%).
+- 정직한 메모: GA가 약해서 "RIBBO>GA"는 "RIBBO>CMA-ES"보다 약한 주장. 강한 claim은 여전히 **EE D=10(4종 DE/CMA/BO/GA 전부 격파)**.
+- 그림: `baselines_with_ga.pdf`/`-1.png`(EE D10 · SE D10 5BA, RIBBO/GA/DE/CMA/Random 5종). GA 캐시 `bsf_cache/*_ga_n200.npy`.
+
 ## 결과 2 — BO 포함 4종 (n=30, 동일 30채널, final gap %)
 
 | Case | RIBBO | DE | CMA-ES | BO | Random | RIBBO 승률 vs BO |

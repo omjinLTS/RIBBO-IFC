@@ -43,30 +43,30 @@
             \textbf{Problem} \hfill {\scriptsize Lee et al., TCOM 2025}
             \begin{tightitemize}
                 \item IFC power control, $\mathbf{x}\in[0,1]^D$, Rayleigh fading
-                \item \textbf{SE} (spectral efficiency, sum-rate): optimum at box \emph{corners} --- strong links full-on, weak links off
-                \item \textbf{EE} (energy efficiency, rate\,/\,power): optimum in the \emph{interior} --- mid power
+                \item \textbf{SE} (spectral efficiency): optimum at box \emph{corners} (links full-on or off)
+                \item \textbf{EE} (energy efficiency): optimum in the \emph{interior} (mid power)
             \end{tightitemize}
 
             \vspace{0.5em}
             \textbf{Method}
             \begin{tightitemize}
-                \item RIBBO (Reinforced In-Context BBO): a transformer that learns \emph{how to optimize} from past attempts
-                \item Key parts: regret-to-go (RTG) target token, hindsight regret relabeling (HRR)
+                \item RIBBO (Reinforced In-Context Black-Box Optimization): a transformer that learns \emph{how to optimize} from past attempts
+                \item Key parts: regret-to-go (RTG) token, hindsight regret relabeling (HRR)
             \end{tightitemize}
         \end{column}
         \begin{column}{0.48\textwidth}
             \textbf{Reference solution} {\scriptsize(defines the gap)}
             \begin{tightitemize}
                 \item SE: WMMSE (classical solver; \emph{local}-optimal)
-                \item EE: $D{=}3$ exhaustive grid; $D{=}10/20$ multi-start gradient (40 restarts; near-global)
-                \item \textbf{Optimality gap (\%)} $=100\times\frac{\text{ref}-\text{achieved}}{\text{ref}}$; \textbf{lower is better} ($0=$ reference). As in Lee et al.
+                \item EE: $D{=}3$ exhaustive grid; $D{=}10/20$ multi-start gradient (near-global)
+                \item \textbf{Optimality gap (\%)} $=100\times\frac{\text{ref}-\text{achieved}}{\text{ref}}$; \textbf{lower is better} ($0=$ reference)
             \end{tightitemize}
 
             \vspace{0.5em}
             \textbf{Evaluation}
             \begin{tightitemize}
-                \item Unseen channels $=$ new Rayleigh $\mathrm{CN}(0,1)$ realizations (same distribution)
-                \item 300 steps; behavior-algorithm (BA) pool $=$ 3BA (Random, Hill-Climbing, CMA-ES) unless noted
+                \item Unseen channels: new Rayleigh $\mathrm{CN}(0,1)$ realizations (same distribution)
+                \item 300 steps; behavior-algorithm (BA) pool: \textbf{3BA} $=$ Random, Hill-Climbing, CMA-ES, unless noted
             \end{tightitemize}
         \end{column}
     \end{columns}
@@ -77,7 +77,7 @@
 % ----------------------------------------------------------------
 \section{Progress}
 
-\begin{frame}{Result 1 --- BA Pool $\times$ Dimension (SE)}
+\begin{frame}{Result 1 --- Behavior-Algorithm Pool $\times$ Dimension (SE)}
     \small
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.40\textwidth}
@@ -95,19 +95,19 @@
                 Random                           & 17.0          & 56.4          \\
                 \bottomrule
             \end{tabular}
-            {\scriptsize\\ 3BA $=$ \{Random, HC, CMA-ES\}\\ 5BA-filter $=$ \{HC, RegEvol, Eagle, CMA-ES, BoTorch\}\\ 7BA $=$ 5BA-filter $+$ Random $+$ ShuffledGridSearch}
+            {\scriptsize\\ 3BA: Random, Hill-Climbing, CMA-ES.\\ 5BA-filter: drops Random + Shuffled-Grid-Search; adds Regularized-Evolution, Eagle-Strategy, Bayesian optimization.\\ 7BA: 5BA-filter $+$ Random $+$ Shuffled-Grid-Search.}
 
-            \vspace{0.4em}
+            \vspace{0.3em}
             \begin{tightitemize}
-                \item $D{=}3$: the simple 3BA pool is \emph{best}; adding more algorithms hurts
-                \item $D{=}10$: the curated 5BA-filter pool reduces the gap by 23.6 pts ($52.2\to28.6$)
-                \item Consistent with the RIBBO paper (use \emph{well-performing} and \emph{diverse} BAs), but the effect is dimension-dependent
+                \item $D{=}3$: the simple 3BA pool is best; adding algorithms degrades it
+                \item $D{=}10$: the curated 5BA-filter cuts the gap by 23.6 pts
+                \item Matches the RIBBO paper (well-performing \emph{and} diverse BAs), but dimension-dependent
             \end{tightitemize}
         \end{column}
         \begin{column}{0.58\textwidth}
             \centering
-            \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{fig_ablation_2x2.pdf}
-            \par\vspace{0.2em}{\scriptsize Bars: RIBBO gap to WMMSE.\, Dotted: Random.\, Lower $=$ better.}
+            \includegraphics[width=\linewidth,height=0.62\textheight,keepaspectratio]{fig_ablation_2x2.pdf}
+            \par\vspace{0.2em}{\scriptsize Bars: RIBBO gap to WMMSE.\, Dotted: random search.\, Lower is better.}
         \end{column}
     \end{columns}
 \end{frame}
@@ -115,11 +115,11 @@
 % ----------------------------------------------------------------
 % 4. SE vs EE (STAR slide)
 % ----------------------------------------------------------------
-\begin{frame}{Result 2 --- SE vs.\ EE: where RIBBO helps most \hfill {\small$\star$}}
+\begin{frame}{Result 2 --- SE vs.\ EE: where RIBBO is most effective \hfill {\small$\star$}}
     \small
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.40\textwidth}
-            \textbf{EE's optimum is in the \emph{interior} (mid power), so uniform sampling rarely finds it}
+            \textbf{EE's optimum lies in the \emph{interior} (mid power), so uniform sampling rarely finds it}
             \par\vspace{0.3em}
             \scriptsize
             \begin{tabular}{lrrr}
@@ -132,19 +132,19 @@
                 SE $D{=}10$           & 52.2          & 56.4   & $4.2$           \\
                 \bottomrule
             \end{tabular}
-            {\scriptsize\\ Same 3BA pool; only the reward changes. Separate model per reward and dimension. $\Delta=$ Random $-$ RIBBO.}
+            {\scriptsize\\ Same 3BA pool; only the reward changes (separate model per reward and dimension). $\Delta=$ Random $-$ RIBBO.}
 
             \vspace{0.5em}
             \begin{tightitemize}
-                \item On EE $D{=}10$, Random's gap stays at 71\% (uniform sampling rarely reaches the interior)
-                \item RIBBO reduces it to 22\% --- a 48.7 pt smaller gap
-                \item The clearest case for RIBBO in wireless
+                \item On EE $D{=}10$, uniform sampling stays far from the optimum; RIBBO closes most of the gap
+                \item RIBBO's gap is \textbf{48.7 pts} smaller --- the largest margin we observe
+                \item The most compelling case for RIBBO in wireless
             \end{tightitemize}
         \end{column}
         \begin{column}{0.58\textwidth}
             \centering
             \includegraphics[width=\linewidth,height=0.66\textheight,keepaspectratio]{fig_ee_se.pdf}
-            \par\vspace{0.2em}{\scriptsize Shaded $=$ how much smaller RIBBO's gap is; at $D{=}10$ Random's gap stays $\sim$71\%.}
+            \par\vspace{0.2em}{\scriptsize Shaded region $=$ how much smaller RIBBO's gap is than random search.}
         \end{column}
     \end{columns}
 \end{frame}
@@ -159,14 +159,14 @@
             \textbf{Gap vs.\ dimension (SE \& EE, 3BA)}
             \begin{tightitemize}
                 \item Gap grows with $D$ for both; one model \emph{per dimension} (not dimension-agnostic)
-                \item RIBBO's EE $D{=}10$ gap $\ll$ Random (48.7 pts); SE difference small
+                \item RIBBO's edge over random is largest for EE at $D{=}10$; small for SE
             \end{tightitemize}
             \vspace{-0.1em}
             \textbf{Reducing the gap (SE):}
             \begin{tightitemize}
-                \item Better algorithm choice: $D{=}20$ $67.0\to\mathbf{58.1}$ ($-8.9$)
-                \item More steps: $D{=}10$ $27.1\to\mathbf{19.0}$ ($-8.1$)
-                \item \emph{But} not for EE $D{=}20$ ($69.9\to69.7$) --- needs more data
+                \item Better algorithm choice ($D{=}20$): $-8.9$ pts
+                \item More search steps ($D{=}10$): $-8.1$ pts
+                \item \emph{But} not for EE $D{=}20$ --- needs more data, not steps
             \end{tightitemize}
         \end{column}
         \begin{column}{0.58\textwidth}
@@ -184,11 +184,11 @@
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.46\textwidth}
             \begin{tightitemize}
-                \item Random search ($=$ Lee et al.'s \emph{Brute-force} baseline) plateaus above a 50\% gap and rarely reaches the EE interior optimum; \textbf{RIBBO goes where uniform sampling cannot}
-                \item Smaller gap than Random on \textbf{100\%} of channels at $D{=}10$ (SE \& EE), 99.5\% at $D{=}20$
-                \item Statistically stable: 95\% CI $\pm{<}1.5$\% ($n{=}200$--$500$)
-                \item EE advantage persists at $D{=}20$ (13 pt smaller, every channel)
-                \item A local search reaches a $\sim$0 gap from \emph{any} start --- with the channel model / gradients the problem is easy, so RIBBO's value is the \emph{no-model} setting
+                \item Random search ($=$ Lee et al.'s \emph{Brute-force} baseline) plateaus far from the optimum; \textbf{RIBBO reaches regions uniform sampling cannot}
+                \item Smaller gap than random on \emph{every} channel at $D{=}10$ (nearly all at $D{=}20$) --- not merely on average
+                \item Statistically stable (narrow 95\% confidence intervals, $n{=}200$--$500$)
+                \item The EE advantage persists at $D{=}20$, on every channel
+                \item A local search reaches a near-zero gap from \emph{any} start; with the model and gradients the problem is easy, so RIBBO's value is the \emph{model-free} setting
             \end{tightitemize}
         \end{column}
         \begin{column}{0.46\textwidth}
@@ -201,7 +201,7 @@
 % ----------------------------------------------------------------
 % 6. Cross-domain transfer fails
 % ----------------------------------------------------------------
-\begin{frame}{Result 5 --- Training on Another Problem Doesn't Transfer}
+\begin{frame}{Result 5 --- Cross-Problem Training Does Not Transfer}
     \small
     \begin{columns}[T,onlytextwidth]
         \begin{column}{0.42\textwidth}
@@ -221,16 +221,16 @@
 
             \vspace{0.5em}
             \begin{tightitemize}
-                \item Rescaling the target does \emph{not} help ($68.2\to68.8$)
-                \item Our earlier guess (a scaling mismatch) was \textbf{wrong}
-                \item Weak SE 3BA config here, so IFC-vs-Random is small --- the point is \emph{in-domain vs.\ transfer}
-                \item $\Rightarrow$ \textbf{in-domain IFC training is needed}
+                \item Rescaling the target does \emph{not} help
+                \item Our earlier hypothesis (a normalization mismatch) proved incorrect
+                \item Weak SE 3BA setting here, so IFC-vs-random is small --- the point is \emph{in-domain vs.\ transfer}
+                \item $\Rightarrow$ \textbf{in-domain IFC training is required}
             \end{tightitemize}
         \end{column}
         \begin{column}{0.56\textwidth}
             \centering
             \includegraphics[width=\linewidth,height=0.64\textheight,keepaspectratio]{fig_transfer.pdf}
-            \par\vspace{0.2em}{\scriptsize Rastrigin-trained (red/blue) have larger gaps than Random (gray); only IFC-trained (green) shrinks it.}
+            \par\vspace{0.2em}{\scriptsize Rastrigin-trained (red/blue) have larger gaps than random (gray); only in-domain training (green) shrinks it.}
         \end{column}
     \end{columns}
 \end{frame}
@@ -243,12 +243,12 @@
 \begin{frame}{Insights --- When Does RIBBO Help?}
     \vspace{0.5em}
     \begin{itemize}
-        \setlength{\itemsep}{0.9em}
-        \item \textbf{The effect depends on the problem and its size.} For SE $D{=}3$ (on/off) simple methods already do well; for EE RIBBO shows a clearly smaller gap (48.7 pts at $D{=}10$).
-        \item \textbf{Classical solvers need the channel model; RIBBO uses only scores.} WMMSE / fractional programming (FP) reach their reference solution with the model, and in our hybrid test a local search also closed the gap --- so RIBBO's clearest role is the \textbf{no-model} setting.
-        \item \textbf{Which training algorithms help is problem-dependent.} Dropping weak ones reduced the SE gap at high $D$ ($-23.6$ pts) but increased the EE gap.
-        \item \textbf{With a fixed setup, the gap grew with $D$;} more data / steps and a better algorithm choice reduced it (SE).
-        \item \textbf{Cross-problem transfer did not work:} a Rastrigin-trained model did not improve on IFC; in-domain training was needed.
+        \setlength{\itemsep}{0.8em}
+        \item \textbf{The effect depends on the problem and its scale.} Simple methods already do well for SE $D{=}3$; RIBBO's largest margin is for EE (48.7 pts at $D{=}10$).
+        \item \textbf{Classical solvers need the channel model; RIBBO uses only scores.} WMMSE / fractional programming (FP) reach it with the model, and a local search also closed the gap --- so RIBBO's clearest role is \textbf{model-free}.
+        \item \textbf{Which training algorithms help is problem-dependent.} Removing weak ones helped SE at high $D$ but hurt EE.
+        \item \textbf{With a fixed setup the gap grows with $D$;} more data, more steps, and a better algorithm choice reduce it (SE).
+        \item \textbf{Cross-problem transfer did not work:} in-domain IFC training was required.
     \end{itemize}
 \end{frame}
 

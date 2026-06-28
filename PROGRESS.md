@@ -1,3 +1,23 @@
+## 2026-06-29 (밤샘 자율) — 발표 마감 패키지: GA baseline + 폴리시 + 팔로업 + 런북
+
+학생 지시: 8시 출근 후 2시간 내 선배에게 [답변+팔로업+발표자료] 보낼 수 있게, 자는 동안 "과하다 싶을 정도로" 고품질 준비.
+
+**1) GA(유전알고리즘) baseline 추가** — 선배가 "GA랑 비교스킴" 직접 언급:
+- `scripts/eval_ifc_baselines.py:rollout_ga` 신규(numpy-only, 새 의존성 X). 토너먼트+SBX(η15)+다항변이(η20,p=1/D)+elitism, pop20, pymoo 기본 연산자, 튜닝 안 함. (pymoo/deap 미설치 확인 → pip install은 학생 부재로 회피)
+- n=200 전 케이스. 결과(gap%): EE D10 RIBBO 21.5 / **GA 71.2** / DE 48.6 / CMA 26.8 / Rand 70.6. GA는 빠듯 예산서 가장 약함(고차원 Random과 동급), D=3만 거의 최적. **RIBBO가 GA를 EE D10/D20·curated SE D10/D20서 100% 격파.**
+- 그림 `results/18_de_baseline/baselines_with_ga.pdf/-1.png`, README §결과 1b 추가.
+
+**2) 발표자료 폴리시 마무리**(선배 §B): ML 약어 첫등장 풀이(CMA-ES/BO/SBX 등), 숫자 톤다운(표 유지·본문 % 절제), 영어 격식화. overflow 0, 8장 유지. R4 그림 가독성(상하 스택)도 반영됨.
+
+**3) 선배 전송 패키지 신규**:
+- `presentation/followup_senior_0629.{tex,pdf}`(2쪽, 한글) — 피드백 반영요약 + GA 포함 baseline 표 + 정직한 한계 + 다음(LLMO).
+- `presentation/followup_senior_0629.txt` — 선배 보낼 커버 메시지 복붙용(긴/짧은).
+- `MORNING_RUNBOOK.md`(루트) — 8–11시 스텝바이스텝, 파일 인벤토리, 검증 체크리스트, 선배 되물음 즉답카드, 재컴파일 명령.
+
+**다음 세션/아침**: 학생이 런북 따라 검증→전송. 남은 결정 3건(통신약어 더 풀지/숫자 톤다운 정도/영어 추가)은 학생 확인 대기. GitHub(omjinLTS/RIBBO-IFC main)에도 push 예정.
+
+---
+
 ## 2026-06-28 (새벽) — 메인 deck에 선배 피드백 반영 (progress_0625)
 
 학생 결정: h1000(A) finding은 발표에 안 씀(기록만), 메인 흐름 유지 + 선배 피드백 적용.
@@ -10,6 +30,13 @@
 - **미적용(주관적, 학생 확인 대기)**: B4 숫자 톤다운(표는 유지), B5 영어 톤 추가 정리, 통신/공통 약어(CMA-ES/BO/WMMSE/SINR) 풀어쓰기.
 - 산출물: `presentation/progress_0625.pdf` 갱신. 학생 텔레그램 전송.
 - 학생 요청("정리해서 답변"): 선배 질문별 **답변지** 작성 `presentation/senior_feedback_answers_0628.{tex,pdf}`(xelatex, 3쪽, Q→답→반영완료, 남은결정 빨강). 선배 회신/숙지용. 남은 결정 3건: 통신약어 풀이 / 숫자 톤다운 정도 / 영어 추가 손질 — 학생 결정 대기.
+
+### GitHub 백업/싱크 (다른 컴 이어작업용)
+- 학생 요청: 코드+데이터+모델 전부 본인 repo에 올려 다른 컴에서 이어작업. remote 구성: `origin`=git@github.com:omjinLTS/RIBBO-IFC(SSH, omjinLTS 인증 확인), 기존 `lamda-bbo/RIBBO`는 `upstream`으로. branch master→**main**.
+- `.gitignore` 재작성: data/cache/results 포함, **log/**/*.ckpt 무시 후 최종 ckpt만 force-add**, 논문 PDF(`/*.pdf`)·세션로그 제외.
+- 환경: pip freeze가 conda `file://` 경로라 비포터블 → **environment.yml**(conda env export) 생성이 정답(`conda env create -f environment.yml`). requirements.txt(핵심 pip 5개)도 유지.
+- commit `94a9559`: 1440파일 / **785MB** / 최종 체크포인트 **17개**(TOY/smoke/1-epoch 크래시 잔여는 제외). push 성공(main→origin/main).
+- 주의: run_*.sh·CHEATSHEET의 python 경로 `/home/myoungjin/miniconda3/...` 하드코딩 → 타 머신선 conda activate 후 `python` 사용. 중간 체크포인트 4.3GB(resume전용)는 미포함(원하면 추가 push).
 
 ---
 
