@@ -138,8 +138,7 @@
 
 \Q{1. 약어 풀어쓰기}
 \An{통신 약어(CSI/UE/BS/SINR/SE/EE/WMMSE)는 OK, 비통신(ML) 약어는 풀어써야.}
-\Done{RIBBO / RTG / HRR / BA / FP 첫 등장 시 full term으로 풀어씀.}
-\Todo{CMA-ES / BO / SGS 등도 풀어쓸지 (통신 청중엔 익숙하나 교수님 대비 안전하게 풀지) 결정.}
+\Done{ML 약어 첫 등장 시 full term: RIBBO / RTG / HRR / BA / FP에 더해 CMA-ES(covariance-matrix adaptation) / BO(Bayesian optimization) / SBX 등도 풀어씀.}
 \sep
 
 \Q{2. optimum/optimal 용어 신중}
@@ -154,16 +153,15 @@
 
 \Q{4. 숫자/\% 과다 = old·피로}
 \An{\% 반복은 눈 아픔. 정성표현 위주 + \%는 구두로.}
-\Todo{표는 근거라 일단 유지 중. 본문 \%를 어디까지 정성표현으로 바꿀지(핵심 1--2개만 남길지) 결정 필요.}
+\Done{본문 bullet의 \% 반복을 정성표현으로 줄임(핵심 수치만 강조). 표는 근거자료로 유지.}
 \sep
 
 \Q{5. 어색한 영어 표현}
 \An{연구실 논문 톤과 안 맞음.}
-\Done{눈에 띄는 구어체 교정(``flips with dimension'', ``RIBBO saves'', ``as-is'', ``Fewer tries'', ``it keeps trying high-power'').}
-\Todo{원하면 슬라이드 전체를 논문 톤으로 한 번 더 다듬기.}
+\Done{구어체 전반 격식화(``flips with dimension''$\to$``depends on the dimension'', ``RIBBO saves''$\to$``$\Delta$'', ``as-is''$\to$``unchanged'', ``Fewer tries'', ``it keeps trying high-power'' 등 정리).}
 
 \vspace{10pt}
 \noindent\colorbox{black!8}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{한 줄 요약:} 선배 질문의 절반은 \textbf{라벨/정의 누락}(SE/EE$\cdot$차원$\cdot$BA 구성$\cdot$reference 종류$\cdot$unseen)이라 채워 넣어 해소했고, 나머지 \textbf{표현 수정}(Scalability$\to$Effect of dimension, optimum$\to$reference, Random 프레이밍, hybrid 분리)도 반영. \textbf{남은 결정 3건}(통신약어 풀이 / 숫자 톤다운 정도 / 영어 추가 손질)만 정하면 됨.}}
+\textbf{한 줄 요약:} 선배 질문의 절반은 \textbf{라벨/정의 누락}(SE/EE$\cdot$차원$\cdot$BA 구성$\cdot$reference 종류$\cdot$unseen)이라 채워 넣어 해소했고, 나머지 \textbf{표현 수정}(Scalability$\to$Effect of dimension, optimum$\to$reference, Random 프레이밍, hybrid 분리)도 모두 반영 완료. 추가로 \textbf{GA 포함 강한 baseline 비교}(별첨 팔로업)까지 진행함.}}
 
 \end{document}
