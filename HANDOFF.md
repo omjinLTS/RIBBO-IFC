@@ -5,19 +5,27 @@
 
 ---
 
-## ⚡ 최신 상태 (2026-06-26)
+## ⚡ 최신 상태 (2026-06-29)
 
 - **지표**: 발표는 **gap to optimum (= 100 − %of-optimum, 낮을수록 좋음, Lee의 optimality gap)** 으로 통일.
-- **발표자료**: `presentation/progress_0625.pdf` (메인 **8장**), `presentation/appendix_0625.pdf` (백업 **12장**).
-  그림은 `scripts/plot_gap_figs.py` 로 npz에서 재생성(gap 버전).
+
+### 🔥 지금 진행 중: 선배 발표초안 피드백 대응 + 아침 전송 준비 (마감: 6/29 오전)
+- **상황**: 선배(권오승)가 progress_0625 draft에 슬라이드별 질문 19개 + 교수님대비 마이너 5건 줌. 학생이 8시 출근→2시간 내 [답변+팔로업+발표자료]를 선배에게 보낼 예정.
+- **★먼저 읽을 것: `MORNING_RUNBOOK.md`(루트)** — 8–11시 스텝바이스텝, 파일 인벤토리, 검증 체크리스트, 선배 되물음 즉답카드.
+- **발표자료**: `presentation/progress_0625.pdf`(메인 **8장**, 선배 피드백 **전부 반영 완료**: 약어 풀이/숫자 톤다운/영어 격식/그래프 제목제거·y축 통일/Scalability→Effect of dimension/optimum→reference/R4 그림 상하스택 가독성). overflow 0.
+- **선배 전송용 산출물(다 만들어둠)**:
+  - `presentation/senior_qa_answers_0629.txt` — 질문 19+5개 Q-by-Q 답변, **학생 말투(캐주얼 존댓말)**. 복붙용. ← 학생이 이 톤 좋아함([[feedback_writing_tone]]).
+  - `presentation/senior_feedback_answers_0628.pdf`(3쪽) — 문서버전 답변지(Q→답→반영).
+  - `presentation/followup_senior_0629.{pdf,txt}` — 팔로업(반영요약+GA비교+한계). txt는 커버메시지 복붙용.
+- **신규 실험(선배 "GA/비교스킴" 요청 대응)**: `scripts/eval_ifc_baselines.py:rollout_ga`(numpy GA, SBX+다항변이+토너먼트, 튜닝X) 추가. n=200. **EE D=10서 RIBBO가 GA/DE/CMA-ES/BO 4종 다 격파(gap RIBBO 21.5/GA 71.2/DE 48.6/CMA 26.8/Rand 70.6)**. GA는 빠듯예산서 가장 약함(Random급)=정직히 명시. 그림 `results/18_de_baseline/baselines_with_ga.png`, 숫자 `results/18_de_baseline/README.md §결과 1b`.
+- **진행 중 Q&A(학생이 선배 답변 다듬는 중)**: corner/interior, multistart 근거, unseen 정의, best-BA-pool, Result2 학습셋업, Random 프레이밍, error bar, hybrid(빼기로 가닥), transfer 약한config 등 거의 다 답 줌. **미해결: hybrid bullet을 메인 deck R4에서 뺄지 학생 확인 대기**(빼도 8장·논리 유지).
+- **GitHub 백업**: 전부 `git@github.com:omjinLTS/RIBBO-IFC`(branch **main**)에 push 완료. origin=내 repo, upstream=lamda-bbo/RIBBO. 데이터/캐시/결과/최종 체크포인트 17개 포함. env 복원=`conda env create -f environment.yml`.
+
+### 그 이전까지의 핵심(유지)
+- **핵심 메시지**: RIBBO는 (고차원 + EE interior-optimum + curated pool + model-free + 적은예산) 상황에서 가치 큼. EE D=10서 Random 대비 gap 48.7pts 작음. **단 장-budget(1000eval)이면 CMA-ES가 거의 최적까지 가서, RIBBO 니치는 단-budget 코너로 좁혀짐(정직한 한계)**. hybrid(local search)는 모델 있으면 쉬움을 보임.
+- **baseline 비교**(`results/18`,`19`): DE/CMA-ES/BO/GA 전부 동일조건 비교. CMA-ES가 대부분 regime서 RIBBO보다 셈. h1000 재학습(horizon-1000)은 h300보다 오히려 나쁨(데이터 평탄tail 희석, `results/19` README).
 - **발표 보조문서**: `MASTER_GUIDE.md`(발표 숙지/Q&A), `CHEATSHEET.md`(실험환경·코드·숫자 즉답).
-- **신규 결과**: EE D=20 학습/평가(`results/16`), 분석 A/B/C/D(`results/12~15`), synthesis 그림(`results/17`).
-- **핵심 메시지**: RIBBO는 (고차원 + EE interior-optimum + curated pool + model-free 상황)에서 가치 큼.
-  EE D=10에서 Random 대비 gap 48.7pts 작음. hybrid(local search)는 모델 있으면 쉬움을 보임(정직한 한계).
-- **세션 재시작 스크립트 수정(2026-06-26)**: `scripts/restart_session.sh` 버그픽스. 기존 pkill이
-  텔레그램 **bun poller**(`claude-plugins-official/telegram`)는 안 죽여 새 세션 getUpdates **409 충돌** →
-  (1) bun poller까지 종료, (2) 프로세스 사라질 때까지 최대 15s 폴링+강제킬+3s settle, (3) claude 경로를
-  `command -v`로 해석(conda bin엔 claude 없음). 가장 확실한 실행은 **터미널 직접 `bash scripts/restart_session.sh`**(branch A, TTY exec).
+- **세션 재시작**: `scripts/restart_session.sh`. 가장 확실한 실행은 **터미널 직접 `bash scripts/restart_session.sh`**(branch A, TTY exec). Bash 툴로 돌리면 비-TTY라 branch B(setsid 분리)=환경따라 실패 가능.
 - 상세 시간순은 `PROGRESS.md` 최상단, 종합은 `results/FINAL_REPORT.md` 최상단.
 
 ---
