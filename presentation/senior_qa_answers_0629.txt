@@ -1,0 +1,40 @@
+선배 질문 리스트 답변 (학생 톤, 복붙용) — 2026-06-29
+상세 문서 버전은 senior_feedback_answers_0628.pdf 참고.
+
+【2p Overview】
+1. corner/interior: action이 x∈[0,1]^D 박스인데 최적해 위치 얘기예요. SE는 corner(강한 링크 풀파워=1, 약한 링크=0, 켜고/끄기), EE는 interior(중간 전력, 예: 0.18쯤). EE는 전력 올리면 rate는 늘어도 에너지 손해라 중간이 최적이에요.
+2. SE는 WMMSE 맞고요. EE는 전수(exhaustive)는 D=3만이에요. D=10/20은 너무 커서 multi-start gradient로 풀었어요(near-global 참조).
+3. 네, 3개 알고리즘(Random, Hill-Climbing, CMA-ES)이 만든 탐색 기록을 RIBBO 학습데이터로 쓴 거예요. RIBBO 자체는 트랜스포머 하나고요.
+4. 같은 Rayleigh 분포의 새 채널이에요(train 0~19, 평가 30번~). 완전 다른 분포는 Result 5(Rastrigin) 케이스고요.
+
+【3p Result 1】
+1. SE요. (SE 기록 학습 → SE 평가)
+2. SE요. (라벨 빠졌던 거 추가했어요)
+3. 반대예요! 5BA-filter는 7BA에서 Random+SGS를 뺀 거예요(7BA = 5BA-filter + Random + SGS). 그리고 3BA랑 5BA-filter는 포함관계도 아니에요(3BA엔 Random 있는데 5BA-filter엔 없음).
+4. RIBBO 논문이에요(Song et al., IJCAI 2025). "well-performing하면서 diverse한 BA 써라" 권고가 거기서 나온 거예요.
+5. "best BA pool"이라는 뜻이었는데(최적 조합이 차원 따라 바뀜) 표현이 어색해서 "which BA pool works best depends on dimension"으로 고쳤어요.
+
+【4p Result 2】
+1. 같은 3BA 풀인데 reward만 SE↔EE로 바꾼 거예요. SE/EE 모델 따로, 차원별로도 따로 학습해요.
+2. on/off는 SE 최적(corner=켜고끄기), middle은 EE 최적(interior=중간전력)이요. Overview의 corner/interior랑 같은 말이에요 ㅋㅋ
+
+【5p Result 3】
+1. 맞아요, 정확한 지적이에요. 차원마다 모델 따로 학습한 거라(입력차원=D) dimension-agnostic 아니에요. 그래서 제목을 "Effect of problem dimension"으로 바꿨어요. 진짜 scalability(한 모델이 차원 넘나드는 건) future work고요.
+2. 네 맞아요. (a) BA 풀 조합 바꾸기, (b) 평가 step 늘리기 두 가지예요. 단 EE D=20은 step 늘려도 회복 안 돼서 데이터를 늘려야 해요.
+
+【6p Result 4】
+1. 일리 있어요. 근데 우리 Random은 Lee 논문의 "Brute-force" baseline이랑 똑같은 거고요. 핵심은 "이긴다"가 아니라 Random은 예산 안에서 최적의 50%도 못 가고 멈추는데(특히 EE interior) RIBBO만 도달한다는 거예요. 그렇게 프레이밍 바꿨어요.
+2. 95% 신뢰구간이에요(±1.5% 미만, n=200~500). 결과가 우연이 아니라 통계적으로 안정적이라는 뜻이요.
+3. 네 맞아요, hybrid 결과예요. RIBBO 끝점에 local search 붙이면 gap 거의 0인데, Random+local search도 거의 0이 돼요. 즉 gradient(모델) 있으면 출발점 상관없이 쉽게 풀린다 = RIBBO 가치는 모델 없는 상황 한정이라는 정직한 한계예요. 헷갈려서 따로 bullet로 뺐어요.
+
+【7p Result 5】
+1. 네 맞아요. 초록=IFC학습→IFC, 빨강/파랑=Rastrigin학습→IFC(원본/스케일조정), 회색=Random.
+2. SE D=10이요. (라벨 추가했어요)
+3. 하필 제일 약한 config(SE D=10 3BA)라 그래요. RIBBO가 Random보다 몇 pts밖에 안 나은 영역이거든요(큰 차이 +48.7pt는 EE나 5BA-filter). 이 슬라이드 목적이 RIBBO-vs-Random이 아니라 in-domain-vs-transfer라서요. 주석 달았어요.
+
+【마이너 (교수님 대비)】
+1. ML 약어(RIBBO/RTG/HRR/BA/CMA-ES/BO 등) 첫 등장 때 다 풀어썼어요. 통신 약어는 그대로 두고요.
+2. 맞아요, WMMSE는 local optimal이죠. "optimum" 표현 빼고 "reference(local-optimal)"로 바꿨어요. 메트릭명 "optimality gap"만 Lee 논문도 쓰는 거라 유지했고요.
+3. y축 "optimality gap (%)"로 통일하고 그래프 위 제목 다 뺐어요(밑에 설명 있으니까).
+4. 슬라이드 본문은 "더 우수한 성능" 식 정성표현으로 줄이고 % 반복 뺐어요. 표는 근거라 두고 발표 때 구두로요.
+5. 구어체(flips with dimension, RIBBO saves, as-is 등) 다 격식체로 다듬었어요.
